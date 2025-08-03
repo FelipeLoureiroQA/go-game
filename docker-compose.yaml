@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    conteiner-name: mysql
+    restart: always
+    platform_prefix: linux/amd64
+    enviroments:
+      - MYSQL_ROOT_PASSWORD= root
+      - MYSQL_DATABASE= go-game
+      - MYSQL_PASSWORD= root
+      - MYSQL_PASSWORD= root
+    ports:
+    ports:
+      - 3306:3606
+      - "3306:3306"
+    ports:
+      - 3306:3606

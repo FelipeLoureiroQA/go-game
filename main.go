@@ -1,114 +1,78 @@
 package main
 
 import (
-	"fmt"
-	"sort"
-	"strings"
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/google/uuid"
 )
 
+// Item representa um ingrediente ou qualquer item no inventário.
+type Item struct {
+	Nome string
+}
+
+// Pocao representa uma poção que pode ser criada.
+type Pocao struct {
+	Nome       string
+	Descricao  string
+	Combinacao []string // Nomes dos itens necessários
+}
+
+// Jogador representa o estado do jogador no jogo.
+type Jogador struct {
+	ID 		   string
+	Name       string
+	Inventario []Item
+	Pocoes     []Pocao
+}
+
+func NewJogador(name string, inventario []Item, pocoes []Pocao) *Jogador{
+	return &Jogador{
+		ID: uuid.New().String(),
+		Name: name,
+		Inventario: inventario,
+		Pocoes: pocoes,
+	}
+}
+
+
 func main() {
+	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306/go-game")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	jogador := NewJogador("felipe", []Item{}, []Pocao{})
+	err = insertJogador(db, jogador)
+	if err != nil {
+		panic(err)
+	}
+
+
 	IniciarJogo()
 }
 
-func exibirInventario(jogador Jogador) {
-	fmt.Println("\n--- SEU INVENTÁRIO ---")
-	if len(jogador.Inventario) == 0 {
-		fmt.Println("Você não possui ingredientes.")
-	} else {
-		fmt.Println("Ingredientes:")
-		for _, item := range jogador.Inventario {
-			fmt.Printf("- %s\n", item.Nome)
-		}
-	}
+func insertJogador(db *sql.DB, jogador *Jogador) error {
+stmt, err := db.Prepare("INSERT INTO jogadores (id, name, inventario, pocoes) VALUES (?, ?, ?)")
+if err != nil {
+	return err
+}
+defer stmt.Close()
+_, err = stmt.Exec(jogador.ID, jogador.Name, jogador.Inventario, jogador.Pocoes)
+if err!= nil {
+	return err
+}
+return nil
 
-	if len(jogador.Pocoes) == 0 {
-		fmt.Println("\nVocê não possui poções.")
-	} else {
-		fmt.Println("\nPoções:")
-		for _, pocao := range jogador.Pocoes {
-			fmt.Printf("- %s: %s\n", pocao.Nome, pocao.Descricao)
-		}
-	}
-	fmt.Println("----------------------")
 }
 
-func misturarIngredientes(jogador Jogador) Jogador {
-	fmt.Println("\nQuais ingredientes você quer misturar?")
-	fmt.Print("Ingrediente 1: ")
-	var nomeItem1 string
-	fmt.Scanln(&nomeItem1)
 
-	fmt.Print("Ingrediente 2: ")
-	var nomeItem2 string
-	fmt.Scanln(&nomeItem2)
 
-	// Verificar se o jogador possui os itens
-	idx1, ok1 := encontrarItemNoInventario(jogador, nomeItem1)
-	idx2, ok2 := encontrarItemNoInventario(jogador, nomeItem2)
 
-	if !ok1 {
-		fmt.Printf("Você não tem '%s' no inventário.\n", nomeItem1)
-		return jogador
-	}
-	if !ok2 {
-		fmt.Printf("Você não tem '%s' no inventário.\n", nomeItem2)
-		return jogador
-	}
-	if strings.EqualFold(nomeItem1, nomeItem2) {
-		fmt.Println("Você não pode misturar um item com ele mesmo.")
-		return jogador
-	}
 
-	// Verificar se a combinação resulta em uma poção
-	combinacao := []string{nomeItem1, nomeItem2}
-	pocaoResultante, receitaEncontrada := verificarReceita(combinacao)
 
-	if receitaEncontrada {
-		fmt.Printf("\nSucesso! Você criou: %s!\n", pocaoResultante.Nome)
 
-		// Adicionar poção ao inventário
-		jogador.Pocoes = append(jogador.Pocoes, pocaoResultante)
 
-		// Remover ingredientes usados do inventário
-		// Remove o de maior índice primeiro para não invalidar o menor índice.
-		if idx1 > idx2 {
-			jogador.Inventario = append(jogador.Inventario[:idx1], jogador.Inventario[idx1+1:]...)
-			jogador.Inventario = append(jogador.Inventario[:idx2], jogador.Inventario[idx2+1:]...)
-		} else {
-			jogador.Inventario = append(jogador.Inventario[:idx2], jogador.Inventario[idx2+1:]...)
-			jogador.Inventario = append(jogador.Inventario[:idx1], jogador.Inventario[idx1+1:]...)
-		}
-
-	} else {
-		fmt.Println("\nA mistura falhou. Nada aconteceu...")
-		// Futuramente, pode haver um efeito negativo aqui!
-	}
-
-	return jogador
-}
-
-// --- Funções Auxiliares ---
-
-func encontrarItemNoInventario(jogador Jogador, nomeItem string) (int, bool) {
-	for i, item := range jogador.Inventario {
-		if strings.EqualFold(item.Nome, nomeItem) {
-			return i, true
-		}
-	}
-	return -1, false
-}
-
-func verificarReceita(combinacao []string) (Pocao, bool) {
-	sort.Strings(combinacao) // Ordena para a ordem não importar
-
-	for _, receita := range Receitas {
-		receitaOrdenada := make([]string, len(receita.Combinacao))
-		copy(receitaOrdenada, receita.Combinacao)
-		sort.Strings(receitaOrdenada)
-
-		if strings.Join(combinacao, ",") == strings.Join(receitaOrdenada, ",") {
-			return Pocao{Nome: receita.Nome, Descricao: receita.Descricao}, true
-		}
-	}
-	return Pocao{}, false
-}
