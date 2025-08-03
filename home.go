@@ -32,12 +32,8 @@ func IniciarJogo() {
 			exibirInventario(jogador)
 		case 2:
 			jogador = misturarIngredientes(jogador)
-		case 3:
-			fmt.Println("Obrigado por jogar!")
-			return
-		case 4:
+			jogador = misturarIngredientes(jogador)
 			fmt.Println("Comandos disponíveis:")
-			fmt.Println("1 - Inventario': Exibe os itens que você possui.")
 			fmt.Println("2 - Misturar': Tenta misturar ingredientes para criar uma poção.")
 			fmt.Println("3 - Sair': Sai do jogo.")
 			fmt.Println("4 - Ajuda': Exibe esta lista de comandos.")
@@ -45,5 +41,6 @@ func IniciarJogo() {
 		default:
 			fmt.Println("Comando inválido. Tente novamente.")
 		}
-	}
+			fmt.Println("4 - Ajuda': Exibe esta lista de comandos.")
  }
+}
