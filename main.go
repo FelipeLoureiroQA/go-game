@@ -22,27 +22,42 @@ type Pocao struct {
 
 // Jogador representa o estado do jogador no jogo.
 type Jogador struct {
-	ID 		   string
+	ID         string
 	Name       string
 	Inventario []Item
 	Pocoes     []Pocao
 }
 
-func NewJogador(name string, inventario []Item, pocoes []Pocao) *Jogador{
+func NewJogador(name string, inventario []Item, pocoes []Pocao) *Jogador {
 	return &Jogador{
-		ID: uuid.New().String(),
-		Name: name,
+		ID:         uuid.New().String(),
+		Name:       name,
 		Inventario: inventario,
-		Pocoes: pocoes,
+		Pocoes:     pocoes,
 	}
 }
 
 
+func insertJogador(db *sql.DB, jogador *Jogador) error {
+	stmt, err := db.Prepare("insert into jogador (id, name, inventario, pocoes) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(jogador.ID, jogador.Name, jogador.Inventario, jogador.Pocoes)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
 func main() {
-	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306/go-game")
+	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/go")
 	if err != nil {
 		panic(err)
 	}
+	
 	defer db.Close()
 
 	jogador := NewJogador("felipe", []Item{}, []Pocao{})
@@ -51,28 +66,4 @@ func main() {
 		panic(err)
 	}
 
-
-	IniciarJogo()
 }
-
-func insertJogador(db *sql.DB, jogador *Jogador) error {
-stmt, err := db.Prepare("INSERT INTO jogadores (id, name, inventario, pocoes) VALUES (?, ?, ?)")
-if err != nil {
-	return err
-}
-defer stmt.Close()
-_, err = stmt.Exec(jogador.ID, jogador.Name, jogador.Inventario, jogador.Pocoes)
-if err!= nil {
-	return err
-}
-return nil
-
-}
-
-
-
-
-
-
-
-
