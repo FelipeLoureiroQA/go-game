@@ -1,19 +1,12 @@
-// Jogo Primeira fase
-//Você terá ervas, plantas, raizes, flores, madeiras e produtos alquimicos
-// você pode misturar e testar
-// Ira criar um poção quando a combinação for correta
-
-// Se a quantidade for incorreta podera criar reações
-// buscar receitas para aspoções
-
 package main
 
 import (
+	"database/sql"
 	"fmt"
 )
 
 func IniciarJogo() {
-	jogador := criarJogadorInicial()
+	
 
 	fmt.Println("\nBem-vindo ao mundo da Alquimia!")
 	exibirAjuda()
@@ -23,13 +16,15 @@ func IniciarJogo() {
 		var options int
 		fmt.Scanln(&options)
 
+		
+jogador := criarJogadorInicial()
 		// O 'continue' reinicia o loop, pedindo a próxima ação.
 		switch options {
 		case 1:
 			exibirInventario(jogador)
 			continue
 		case 2:
-			jogador = misturarIngredientes(jogador)
+			misturarIngredientes(jogador)
 			continue
 		case 3:
 			fmt.Println("Obrigado por jogar! Até a próxima.")
@@ -43,6 +38,14 @@ func IniciarJogo() {
 	}
 }
 
+func exibirMenuPrincipal() {
+	fmt.Println("\n--- COMANDOS DISPONÍVEIS ---")
+	fmt.Println("1 - Novo Jogo")
+	fmt.Println("2 - Carregar Jogo")
+	fmt.Println("3 - Sair do jogo.")
+	fmt.Println("----------------------------")
+}
+
 func exibirAjuda() {
 	fmt.Println("\n--- COMANDOS DISPONÍVEIS ---")
 	fmt.Println("1 - Inventário: Exibe os itens que você possui.")
@@ -50,4 +53,30 @@ func exibirAjuda() {
 	fmt.Println("3 - Sair: Sai do jogo.")
 	fmt.Println("4 - Ajuda: Exibe esta lista de comandos.")
 	fmt.Println("----------------------------")
+}
+
+func opcaoMenu(options int) {
+
+	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/go")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	
+	if options == 1 {
+		fmt.Print("\n Novo Jogo ")
+		criarJogadorInicial()
+		jogador := NewJogador("felipe_teste", criarJogadorInicial().Inventario, []Pocao{})
+		err = insertJogador(db, jogador)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("\nJogador inserido com sucesso no banco de dados!")
+	} 
+	if options == 2 {
+		fmt.Print("\n Carregar Jogo ")
+	} else {
+		fmt.Print("\n Sair ")
+		return
+	}
 }
