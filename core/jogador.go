@@ -15,6 +15,19 @@ type Jogador struct {
 	Name       string
 	Inventario []Item
 	Pocoes     []Pocao
+}	
+
+func criarJogadorInicial() Jogador {
+	jogador := Jogador{
+		Inventario: []Item{
+			ItensDisponiveis[0], // Erva-do-Sono
+			ItensDisponiveis[1], // Raiz-de-Cura
+			ItensDisponiveis[4], // Sais-da-Terra
+			ItensDisponiveis[5], // Agua-Pura
+		},
+		Pocoes: []Pocao{},
+	}
+	return jogador
 }
 
 func NewJogador(name string, inventario []Item, pocoes []Pocao) *Jogador {
